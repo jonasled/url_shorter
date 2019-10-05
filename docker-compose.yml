@@ -1,0 +1,14 @@
+version: '2.1'
+services:
+  url_shorter:
+    build: .
+    volumes:
+      - url_shorter_db:/app/db #Used to store the database
+    ports:
+      - "5000:5000"
+    environment:
+      - domains=192.168.233.136:5000;google.de #List of domains (with port if not 80/443) seperated with ";"
+      - show_build_date=0 #Normaly disable this
+volumes:
+  url_shorter_db:
+    
