@@ -1,7 +1,7 @@
 version: '2.1'
 services:
   url_shorter:
-    image: docker.jonasled.de/url_shorter/url_shorter:latest
+    build: .
     volumes:
       - url_shorter_db:/app/db #Used to store the database
     ports:
