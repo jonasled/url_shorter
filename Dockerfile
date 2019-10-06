@@ -12,12 +12,16 @@ LABEL Name=url_shorter Version=1.0.1
 EXPOSE 5000
 
 WORKDIR /app
-ADD . /app
+ADD ./static /app/static
+ADD ./templates /app/templates
+COPY import.py /app/import.py
+COPY main.py /app/main.py
 
-#RUN apt update
-#RUN apt upgrade -y
+RUN apt update
+RUN apt upgrade -y
 RUN pip install pipreqs
 RUN pipreqs . --force
 RUN python3 -m pip install -r requirements.txt
 RUN date > builddate.txt
-CMD ["python3", "main.py"]
+
+ENTRYPOINT python3 main.py

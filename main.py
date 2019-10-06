@@ -59,7 +59,7 @@ def home():
             except Exception as e:
                 pass
 
-            if not already_used: #If noone used the short link before, insert the data in the Database.
+            if not already_used: #If short link wasn't used before, insert the link in the Database.
                 res = cursor.execute(
                     'INSERT INTO WEB_URL (LONG_URL, SHORT_URL) VALUES (?, ?)',
                     [url, request.form.get('domain') + "/" + request.form.get('short')]
