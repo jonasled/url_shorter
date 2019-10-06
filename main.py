@@ -4,7 +4,6 @@ import sqlite3
 from urllib.parse import urlparse
 import os
 
-str_encode = str.encode
 app = Flask(__name__)
 domain_to_index = {}
 domain_prepared = ""
@@ -48,7 +47,7 @@ def table_check():
 def home():
     host = request.headers['Host'] #Get the domain, the client uses from the Header
     if request.method == 'POST': #Post will be executed if the client inserts a new entry
-        url = str_encode(request.form.get('url'))
+        url = str.encode(request.form.get('url'))
         with sqlite3.connect('db/urls.db') as conn: #Check if another user already used the short link
             cursor = conn.cursor()
             res = cursor.execute('SELECT LONG_URL FROM WEB_URL WHERE SHORT_URL=?', [request.form.get('domain') + "/" + request.form.get('short')])
