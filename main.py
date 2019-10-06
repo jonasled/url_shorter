@@ -45,7 +45,6 @@ def table_check():
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    host = request.headers['Host'] #Get the domain, the client uses from the Header
     if request.method == 'POST': #Post will be executed if the client inserts a new entry
         url = str.encode(request.form.get('url'))
         with sqlite3.connect('db/urls.db') as conn: #Check if another user already used the short link
@@ -56,7 +55,7 @@ def home():
                 already_used = False
                 if short is not None:
                     already_used = True
-            except Exception as e:
+            except:
                 pass
 
             if not already_used: #If short link wasn't used before, insert the link in the Database.
