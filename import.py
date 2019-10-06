@@ -1,6 +1,6 @@
 import sqlite3
 import os
-def table_check():
+def table_check(): #Check if database exists
     create_table = """
         CREATE TABLE WEB_URL(
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,19 +19,18 @@ table_check()
 with sqlite3.connect('db/urls.db') as conn:
     cursor = conn.cursor()
     try:
-        file = open("import.csv", "r").readlines()
+        file = open("import.csv", "r").readlines() #try opening file and read all lines
     except:
-        print("no file for import found")
+        print("no file for import found") #If open fails, there was no file.
         exit()
-    entries = len(file)
+    entries = len(file) #Count the entries (for the output in the for loop)
     counter = 1
     for lines in file:
-        print("Importing " + str(counter) + " from " + str(entries))
-        SHORT_URL = lines.split(";")[0].replace("\n", "").replace("\r","")
-        LONG_URL = lines.split(";")[1].replace("\n", "").replace("\r","")
-        res = cursor.execute(
+        print("Importing " + str(counter) + " from " + str(entries)) #Make a progress message (mormaly unnecessary, because import is to quick (<1s))
+        SHORT_URL = lines.split(";")[0].replace("\n", "").replace("\r","") #Split the CSV at the ";" then use the first one and replace all linebreaks
+        LONG_URL = lines.split(";")[1].replace("\n", "").replace("\r","") #Split the CSV at the ";" then use the seccond one and replace all linebreaks
+        res = cursor.execute( #Insert the data in the SQL table
             'INSERT INTO WEB_URL (LONG_URL, SHORT_URL) VALUES (?, ?)',
             [LONG_URL, SHORT_URL]
         )
-        counter = counter + 1
-    os.system("exit")
+        counter = counter + 1 #Add 1 to counter, for progress
