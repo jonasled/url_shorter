@@ -10,19 +10,19 @@ domain_to_index = {}
 domain_prepared = ""
 
 try:
-    domain = os.environ["domains"].split(";")
+    domain = os.environ["domains"].split(";") #Get the domains from the enviorement variable. If no envioremenr variable is set set it to 127.0.0.1:5000 (normaly for testing only)
 except:
     domain = ["127.0.0.1:5000"]
 
 builddate = ""
 try:
-    if(os.environ["show_build_date"] == "1"):
+    if(os.environ["show_build_date"] == "1"): #If you want to see the builddate you can enable this enviorement variable
         builddate = ", Build date: " + open("builddate.txt", "r").read()
 except:
     pass
 
 index = 0
-for domains in domain:
+for domains in domain: #Make from every domnain a entry for the select box later
     domains = domains
     domain_prepared = domain_prepared + '<option value="' + str(domains) + '">' + str(domains) + '</option>'
     domain_to_index[domains] = str(index)
@@ -38,7 +38,7 @@ def table_check():
         """
     with sqlite3.connect('db/urls.db') as conn:
         cursor = conn.cursor()
-        try:
+        try: #Try making the database structure, if fails Database was already created.
             cursor.execute(create_table)
         except sqlite3.OperationalError:
             pass
@@ -46,14 +46,10 @@ def table_check():
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    host = request.headers['Host']
-    if request.method == 'POST':
-        original_url = str_encode(request.form.get('url'))
-        if urlparse(original_url).scheme == '':
-            url = 'http://' + original_url
-        else:
-            url = original_url
-        with sqlite3.connect('db/urls.db') as conn:
+    host = request.headers['Host'] #Get the domain, the client uses from the Header
+    if request.method == 'POST': #Post will be executed if the client inserts a new entry
+        url = str_encode(request.form.get('url'))
+        with sqlite3.connect('db/urls.db') as conn: #Check if another user already used the short link
             cursor = conn.cursor()
             res = cursor.execute('SELECT LONG_URL FROM WEB_URL WHERE SHORT_URL=?', [request.form.get('domain') + "/" + request.form.get('short')])
             try:
@@ -64,38 +60,38 @@ def home():
             except Exception as e:
                 pass
 
-            if not already_used:
+            if not already_used: #If noone used the short link before, insert the data in the Database.
                 res = cursor.execute(
                     'INSERT INTO WEB_URL (LONG_URL, SHORT_URL) VALUES (?, ?)',
                     [url, request.form.get('domain') + "/" + request.form.get('short')]
                 )
-                return render_template('home.html', short_url=request.form.get('domain') + "/" + request.form.get('short'), builddate=builddate, domain=domain_prepared)
+                return render_template('home.html', short_url=request.form.get('domain') + "/" + request.form.get('short'), builddate=builddate, domain=domain_prepared) #return the shorten link to the user
             else:
-                return render_template('home.html', builddate=builddate, domain=domain_prepared, alreadychoosen=True, long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')])
-    return render_template('home.html', builddate=builddate, domain=domain_prepared)
+                return render_template('home.html', builddate=builddate, domain=domain_prepared, alreadychoosen=True, long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because the url was already used
+    return render_template('home.html', builddate=builddate, domain=domain_prepared) #If request method is get, return the default site to create a new shorten link
 
-@app.route('/favicon.ico')
-def throw404():
+@app.route('/favicon.ico') #There is no favicon, so fail.
+def favicon():
     abort(404)
 
 @app.route('/<short_url>')
 def redirect_short_url(short_url):
     host = request.headers['Host']
     url = ""
-    with sqlite3.connect('db/urls.db') as conn:
+    with sqlite3.connect('db/urls.db') as conn: #Get the original URL from the database
         cursor = conn.cursor()
         res = cursor.execute('SELECT LONG_URL FROM WEB_URL WHERE SHORT_URL=?', [host + "/" + short_url])
         try:
             short = res.fetchone()
-            if short is not None:
+            if short is not None: #If a long url is found
                 url = short[0]
                 error_404 = False
             else:
-                error_404 = True
-        except Exception as e:
+                error_404 = True #If no url is found throw a 404, the problem is, if I throw at this point a 404 it will be catched by the try, catch block.
+        except Exception as e: #If there happens an error, print the exception to the console and throw a 500 error
             print(e)
             abort(500)
-    if not error_404:
+    if not error_404: #If there was no 404 error before, redirect the user. If not throw a 404 error
         return redirect(url)
     else:
         abort(404)
@@ -103,4 +99,4 @@ def redirect_short_url(short_url):
 
 if __name__ == '__main__':
     table_check()# This code checks whether database table is created or not
-    serve(app, host='0.0.0.0', port= 5000)
+    serve(app, host='0.0.0.0', port= 5000) #Start the Webserver for all users on port 5000
