@@ -6,15 +6,20 @@ import os
 
 str_encode = str.encode
 app = Flask(__name__)
-domain = "127.0.0.1:5000;2;3".split(";")#os.environ["domains"].split(";")
 domain_to_index = {}
 domain_prepared = ""
 
+try:
+    domain = os.environ["domains"].split(";")
+except:
+    domain = ["127.0.0.1:5000"]
+
 builddate = ""
-
-#if(os.environ["show_build_date"] == "1"):
-#    builddate = ", Build date: " + open("builddate.txt", "r").read()
-
+try:
+    if(os.environ["show_build_date"] == "1"):
+        builddate = ", Build date: " + open("builddate.txt", "r").read()
+except:
+    pass
 
 index = 0
 for domains in domain:
@@ -73,11 +78,6 @@ def home():
 def throw404():
     abort(404)
 
-@app.route('/style.css')
-def stylesheet():
-    content = get_file('style.css')
-    return Response(content, mimetype="text/css")
-
 @app.route('/<short_url>')
 def redirect_short_url(short_url):
     host = request.headers['Host']
@@ -94,6 +94,7 @@ def redirect_short_url(short_url):
                 error_404 = True
         except Exception as e:
             print(e)
+            abort(500)
     if not error_404:
         return redirect(url)
     else:
@@ -101,6 +102,5 @@ def redirect_short_url(short_url):
 
 
 if __name__ == '__main__':
-    # This code checks whether database table is created or not
-    table_check()
+    table_check()# This code checks whether database table is created or not
     serve(app, host='0.0.0.0', port= 5000)

@@ -13,6 +13,7 @@
                   Domain: <select name="domain" id="domain">
                      {{domain | safe}}
                   </select>
+                  <br><p> </p>
                   <input id="short" name="short" type="text" placeholder="short name" value="{{short_url_prefilled}}"/>
                   <button>short</button>
                   <p class="message">&copy; Made by jonasled {{builddate}}</p>
@@ -22,7 +23,7 @@
             {% endif %}
          </div>
       </div>
-      <div id="snackbar">URL already choosen</div>
+      <div id="snackbar">URL already used, please try another one</div>
       {% if alreadychoosen %}
       <script>
          var x = document.getElementById("snackbar");
