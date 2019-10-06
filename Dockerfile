@@ -8,13 +8,14 @@ FROM python:3
 # If you prefer miniconda:
 #FROM continuumio/miniconda3
 
-LABEL Name=url_shorter Version=1.0.1
+LABEL Name=url_shorter Version=1.0.2
 EXPOSE 5000
 
 WORKDIR /app
 ADD ./static /app/static
 ADD ./templates /app/templates
 COPY import.py /app/import.py
+COPY export.py /app/export.py
 COPY main.py /app/main.py
 
 RUN apt update
