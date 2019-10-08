@@ -66,6 +66,10 @@ def makeQR(text):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST': #Post will be executed if the client inserts a new entry
+        if (request.form.get('url').replace(" ", "") == ""):
+            return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="Please enter a url to short, before submitting this form", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because no url to short was provided
+        if (request.form.get('short').replace(" ", "") == ""):
+            return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="Please enter a short name, before submitting this form", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because no short link was provided
         shorturl = request.form.get('domain') + "/" + request.form.get('short')
         url = str.encode(request.form.get('url'))
         with sqlite3.connect('db/urls.db') as conn: #Check if another user already used the short link
@@ -86,7 +90,7 @@ def home():
                 )
                 return render_template('home.html', short_url=shorturl, builddate=builddate, domain=domain_prepared, qrcode=makeQR("http://" + shorturl)) #return the shorten link to the user
             else:
-                return render_template('home.html', builddate=builddate, domain=domain_prepared, alreadychoosen=True, long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because the url was already used
+                return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="URL already used, please try another one", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because the url was already used
     return render_template('home.html', builddate=builddate, domain=domain_prepared) #If request method is get, return the default site to create a new shorten link
 
 @app.route('/favicon.ico') #There is no favicon, so fail.

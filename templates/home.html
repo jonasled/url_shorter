@@ -24,8 +24,8 @@
             {% endif %}
          </div>
       </div>
-      <div id="snackbar">URL already used, please try another one</div>
-      {% if alreadychoosen %}
+      <div id="snackbar">{{snackbar}}</div>
+      {% if snackbar %}
       <script>
          var x = document.getElementById("snackbar");
          x.className = "show";
