@@ -8,7 +8,7 @@ FROM python:3
 # If you prefer miniconda:
 #FROM continuumio/miniconda3
 
-LABEL Name=url_shorter Version=1.1.2
+LABEL Name=url_shorter Version=1.1.3
 EXPOSE 5000
 
 WORKDIR /app

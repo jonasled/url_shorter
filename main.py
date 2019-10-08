@@ -95,7 +95,7 @@ def home():
 
 @app.route('/favicon.ico') #There is no favicon, so fail.
 def favicon():
-    abort(404)
+    return redirect("/static/favicon.ico")
 
 @app.route('/<short_url>')
 def redirect_short_url(short_url):
