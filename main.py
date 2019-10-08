@@ -3,6 +3,11 @@ from flask import Flask, request, render_template, redirect, abort, Markup
 import sqlite3
 from urllib.parse import urlparse
 import os
+import qrcode
+import base64
+from PIL import Image
+from io import BytesIO
+import io
 
 app = Flask(__name__)
 domain_to_index = {}
@@ -43,13 +48,29 @@ def table_check():
             pass
 
 
+def makeQR(text):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=1,
+    )
+    qr.add_data(text)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    with BytesIO() as buffer:
+        img.save(buffer, 'jpeg')
+        return base64.b64encode(buffer.getvalue()).decode()
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST': #Post will be executed if the client inserts a new entry
+        shorturl = request.form.get('domain') + "/" + request.form.get('short')
         url = str.encode(request.form.get('url'))
         with sqlite3.connect('db/urls.db') as conn: #Check if another user already used the short link
             cursor = conn.cursor()
-            res = cursor.execute('SELECT LONG_URL FROM WEB_URL WHERE SHORT_URL=?', [request.form.get('domain') + "/" + request.form.get('short')])
+            res = cursor.execute('SELECT LONG_URL FROM WEB_URL WHERE SHORT_URL=?', [shorturl])
             try:
                 short = res.fetchone()
                 already_used = False
@@ -61,9 +82,9 @@ def home():
             if not already_used: #If short link wasn't used before, insert the link in the Database.
                 res = cursor.execute(
                     'INSERT INTO WEB_URL (LONG_URL, SHORT_URL) VALUES (?, ?)',
-                    [url, request.form.get('domain') + "/" + request.form.get('short')]
+                    [url, shorturl]
                 )
-                return render_template('home.html', short_url=request.form.get('domain') + "/" + request.form.get('short'), builddate=builddate, domain=domain_prepared) #return the shorten link to the user
+                return render_template('home.html', short_url=shorturl, builddate=builddate, domain=domain_prepared, qrcode=makeQR("http://" + shorturl)) #return the shorten link to the user
             else:
                 return render_template('home.html', builddate=builddate, domain=domain_prepared, alreadychoosen=True, long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because the url was already used
     return render_template('home.html', builddate=builddate, domain=domain_prepared) #If request method is get, return the default site to create a new shorten link
