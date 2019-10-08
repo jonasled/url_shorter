@@ -19,6 +19,7 @@ table_check()
 with sqlite3.connect('db/urls.db') as conn:
     cursor = conn.cursor()
     lines = []
+    print("ready to recive data, please paste your data to import and press ENTER")
     while True:
         line = input()
         if line:
