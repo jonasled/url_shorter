@@ -18,14 +18,17 @@ def table_check(): #Check if database exists
 table_check()
 with sqlite3.connect('db/urls.db') as conn:
     cursor = conn.cursor()
-    try:
-        file = open("import.csv", "r").readlines() #try opening file and read all lines
-    except:
-        print("no file for import found") #If open fails, there was no file.
-        exit()
-    entries = len(file) #Count the entries (for the output in the for loop)
+    lines = []
+    while True:
+        line = input()
+        if line:
+            lines.append(line)
+        else:
+            break
+    text = lines
+    entries = len(text) #Count the entries (for the output in the for loop)
     counter = 1
-    for lines in file:
+    for lines in text:
         print("Importing " + str(counter) + " from " + str(entries)) #Make a progress message (mormaly unnecessary, because import is to quick (<1s))
         SHORT_URL = lines.split(";")[0].replace("\n", "").replace("\r","") #Split the CSV at the ";" then use the first one and replace all linebreaks
         LONG_URL = lines.split(";")[1].replace("\n", "").replace("\r","") #Split the CSV at the ";" then use the seccond one and replace all linebreaks
