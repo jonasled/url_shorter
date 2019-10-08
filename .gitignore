@@ -2,5 +2,3 @@
 db/urls.db
 
 import.csv
-
-make_and_push_docker.bat
