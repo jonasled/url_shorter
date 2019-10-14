@@ -1,6 +1,6 @@
 FROM python:3
 
-LABEL Name=url_shorter Version=1.1.3
+LABEL Name=url_shorter Version=1.1.4
 EXPOSE 5000
 
 WORKDIR /app
