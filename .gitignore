@@ -4,3 +4,5 @@ db/urls.db
 import.csv
 
 .thumb/
+
+__pycache__/
