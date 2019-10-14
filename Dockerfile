@@ -1,12 +1,4 @@
-# Python support can be specified down to the minor or micro version
-# (e.g. 3.6 or 3.6.3).
-# OS Support also exists for jessie & stretch (slim and full).
-# See https://hub.docker.com/r/library/python/ for all supported Python
-# tags from Docker Hub.
 FROM python:3
-
-# If you prefer miniconda:
-#FROM continuumio/miniconda3
 
 LABEL Name=url_shorter Version=1.1.3
 EXPOSE 5000
@@ -18,11 +10,18 @@ COPY import.py /app/import.py
 COPY export.py /app/export.py
 COPY main.py /app/main.py
 
+#Make a complete system update
 RUN apt update
 RUN apt upgrade -y
+
+#Install pipreqs. this tool is used to make the requirements.txt file automatic
 RUN pip install pipreqs
 RUN pipreqs . --force
+#Install all required python libs
 RUN python3 -m pip install -r requirements.txt
+
+#Make a builddate file, used if you want to see the builddate in the webui
 RUN date > builddate.txt
 
+#everytime the container starts run main.py
 ENTRYPOINT python3 main.py
