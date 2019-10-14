@@ -101,7 +101,7 @@ def home():
                 return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="URL already used, please try another one", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short').lower(), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because the url was already used
     return render_template('home.html', builddate=builddate, domain=domain_prepared) #If request method is get, return the default site to create a new shorten link
 
-@app.route('/favicon.ico') #There is no favicon, so fail.
+@app.route('/favicon.ico') #Redirect to the static url of the favicon
 def favicon():
     return redirect("/static/favicon.ico")
 
