@@ -1,3 +1,4 @@
+#This file is used for testing the server. because of that, it doesn't use the release files and build the container itself
 version: '2.1'
 services:
   url_shorter:
@@ -8,7 +9,8 @@ services:
       - "5000:5000"
     environment:
       - domains=192.168.233.136:5000;google.de #List of domains (with port if not 80/443) seperated with ";"
-      - show_build_date=0 #Normaly disable this
+      - show_build_date=1 #Disable this, if you don't want to see the builddate
+      - production=0 #Enable this, if you want to run the server in production
 volumes:
   url_shorter_db:
     

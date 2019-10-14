@@ -14,7 +14,7 @@ domain_to_index = {}
 domain_prepared = ""
 
 try:
-    domain = os.environ["domains"].split(";") #Get the domains from the enviorement variable. If no envioremenr variable is set set it to 127.0.0.1:5000 (normaly for testing only)
+    domain = os.environ["domains"].split(";") #Get the domains from the enviorement variable. If no envioremenr variable is set set it to 127.0.0.1:5000 (for testing)
 except:
     domain = ["127.0.0.1:5000"]
 
@@ -23,7 +23,15 @@ try:
     if(os.environ["show_build_date"] == "1"): #If you want to see the builddate you can enable this enviorement variable
         builddate = ", Build date: " + open("builddate.txt", "r").read()
 except:
-    pass
+    pass #This normaly only happens, if the script runs without a container for testing.
+
+try:
+    if(os.environ["production"] == "1"): #If you disable production the flask testserver will be used, because it makes more debug output
+        production = True
+    else:
+        production = False
+except:
+    production = False
 
 index = 0
 for domains in domain: #Make from every domnain a entry for the select box later
@@ -48,7 +56,7 @@ def table_check():
             pass
 
 
-def makeQR(text):
+def makeQR(text): #This function is used to create a QR code and encode it base64, if you make a new shortlink
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -67,10 +75,11 @@ def makeQR(text):
 def home():
     if request.method == 'POST': #Post will be executed if the client inserts a new entry
         if (request.form.get('url').replace(" ", "") == ""):
-            return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="Please enter a url to short, before submitting this form", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because no url to short was provided
+            return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="Please enter a url to short, before submitting this form", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short').lower(), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because no url to short was provided
         if (request.form.get('short').replace(" ", "") == ""):
-            return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="Please enter a short name, before submitting this form", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because no short link was provided
-        shorturl = request.form.get('domain') + "/" + request.form.get('short')
+            return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="Please enter a short name, before submitting this form", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short').lower(), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because no short link was provided
+        shorturl = (request.form.get('domain') + "/" + request.form.get('short')).lower()
+
         url = str.encode(request.form.get('url'))
         with sqlite3.connect('db/urls.db') as conn: #Check if another user already used the short link
             cursor = conn.cursor()
@@ -90,7 +99,7 @@ def home():
                 )
                 return render_template('home.html', short_url=shorturl, builddate=builddate, domain=domain_prepared, qrcode=makeQR("http://" + shorturl)) #return the shorten link to the user
             else:
-                return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="URL already used, please try another one", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short'), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because the url was already used
+                return render_template('home.html', builddate=builddate, domain=domain_prepared, snackbar="URL already used, please try another one", long_url_prefilled=request.form.get('url'), short_url_prefilled=request.form.get('short').lower(), domain_prefilled=domain_to_index[request.form.get('domain')]) #return the user the prefilled form with an error message, because the url was already used
     return render_template('home.html', builddate=builddate, domain=domain_prepared) #If request method is get, return the default site to create a new shorten link
 
 @app.route('/favicon.ico') #There is no favicon, so fail.
@@ -103,7 +112,7 @@ def redirect_short_url(short_url):
     url = ""
     with sqlite3.connect('db/urls.db') as conn: #Get the original URL from the database
         cursor = conn.cursor()
-        res = cursor.execute('SELECT LONG_URL FROM WEB_URL WHERE SHORT_URL=?', [host + "/" + short_url])
+        res = cursor.execute('SELECT LONG_URL FROM WEB_URL WHERE SHORT_URL=?', [host + "/" + short_url.lower()])
         try:
             short = res.fetchone()
             if short is not None: #If a long url is found
@@ -122,4 +131,7 @@ def redirect_short_url(short_url):
 
 if __name__ == '__main__':
     table_check()# This code checks whether database table is created or not
-    serve(app, host='0.0.0.0', port= 5000) #Start the Webserver for all users on port 5000
+    if production: #Check if production variable is set to true use the waitress webserver, else use the buildin flask webserver, with more debug output
+        serve(app, host='0.0.0.0', port= 5000) #Start the Webserver for all users on port 5000
+    else:
+        app.run(host='0.0.0.0', port=5000, debug=True)

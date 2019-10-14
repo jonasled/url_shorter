@@ -1,3 +1,4 @@
+#This is the production compose file, if you want to develop use the docker-compose-test file.
 version: '2.1'
 services:
   url_shorter:
@@ -9,6 +10,7 @@ services:
     environment:
       - domains=192.168.233.136:5000;google.de #List of domains (with port if not 80/443) seperated with ";"
       - show_build_date=0 #Normaly disable this
+      - production=1 #You should only disable this for debugging
 volumes:
   url_shorter_db:
     
